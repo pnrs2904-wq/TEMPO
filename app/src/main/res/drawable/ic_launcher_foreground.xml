@@ -1,0 +1,58 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Outer Focus Circle -->
+    <path
+        android:strokeColor="#C45538"
+        android:strokeWidth="3.5"
+        android:fillColor="#00000000"
+        android:pathData="M54,28 A26,26 0 1,1 53.9,28" />
+
+    <!-- Timer tick accent at top -->
+    <path
+        android:strokeColor="#C45538"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M54,22 L54,26" />
+
+    <!-- Hourglass / Tempo Metronome Shape -->
+    <!-- Top Bar -->
+    <path
+        android:strokeColor="#1C1917"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M42,39 L66,39" />
+
+    <!-- Bottom Bar -->
+    <path
+        android:strokeColor="#1C1917"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M42,69 L66,69" />
+
+    <!-- Upper glass chamber filled with warm ochre -->
+    <path
+        android:fillColor="#C08A3E"
+        android:pathData="M44,42 L64,42 L56,52 L52,52 Z" />
+
+    <!-- Lower glass chamber filled with warm terracotta -->
+    <path
+        android:fillColor="#C45538"
+        android:pathData="M52,56 L56,56 L64,66 L44,66 Z" />
+
+    <!-- Center Flow Bead -->
+    <path
+        android:fillColor="#1C1917"
+        android:pathData="M54,53 A1.5,1.5 0 1,0 54,55 A1.5,1.5 0 1,0 54,53" />
+
+    <!-- Side Glass Outline -->
+    <path
+        android:strokeColor="#1C1917"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M44,40 L64,40 L56,53 L64,68 L44,68 L52,53 Z" />
+</vector>

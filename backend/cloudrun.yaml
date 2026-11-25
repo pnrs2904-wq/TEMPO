@@ -1,0 +1,60 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: tempo-reflection-service
+  labels:
+    cloud.googleapis.com/location: asia-south1
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "20"
+        run.googleapis.com/cpu-throttling: "true"
+        run.googleapis.com/startup-cpu-boost: "true"
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 15
+      containers:
+        - image: REGION-docker.pkg.dev/PROJECT_ID/tempo/tempo-reflection-service:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: 256Mi
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: ANDROID_PACKAGE_NAME
+              value: com.tempo.focus
+            - name: GEMINI_MODEL
+              value: gemini-2.5-flash
+            - name: PLAY_INTEGRITY_ENABLED
+              value: "true"
+            - name: PLAY_INTEGRITY_DEVICE_POLICY
+              value: device
+            - name: PLAY_INTEGRITY_REQUIRE_LICENSED
+              value: "false"
+            - name: GLOBAL_AI_DAILY_LIMIT
+              value: "5000"
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: tempo-gemini-api-key
+                  key: latest
+            - name: GOOGLE_PLAY_SERVICE_ACCOUNT_JSON
+              valueFrom:
+                secretKeyRef:
+                  name: tempo-play-service-account-json
+                  key: latest
+            - name: UPSTASH_REDIS_REST_URL
+              valueFrom:
+                secretKeyRef:
+                  name: tempo-upstash-redis-url
+                  key: latest
+            - name: UPSTASH_REDIS_REST_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: tempo-upstash-redis-token
+                  key: latest

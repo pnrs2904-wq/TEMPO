@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="database" path="tempo_database"/>
+        <include domain="database" path="tempo_database-wal"/>
+        <include domain="database" path="tempo_database-shm"/>
+        <include domain="file" path="datastore/tempo_preferences.preferences_pb"/>
+        <exclude domain="sharedpref" path="tempo_auth_keystore_prefs.xml"/>
+        <exclude domain="file" path="datastore/tempo_auth_encrypted.preferences_pb"/>
+    </cloud-backup>
+    <device-transfer>
+        <include domain="database" path="tempo_database"/>
+        <include domain="database" path="tempo_database-wal"/>
+        <include domain="database" path="tempo_database-shm"/>
+        <include domain="file" path="datastore/tempo_preferences.preferences_pb"/>
+        <exclude domain="sharedpref" path="tempo_auth_keystore_prefs.xml"/>
+        <exclude domain="file" path="datastore/tempo_auth_encrypted.preferences_pb"/>
+    </device-transfer>
+</data-extraction-rules>

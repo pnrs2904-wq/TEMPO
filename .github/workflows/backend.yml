@@ -1,0 +1,56 @@
+name: Website + API + backend CI
+
+on:
+  push:
+    branches: [main, master]
+    paths: ['web/**', 'backend/**', 'shared/**', 'loadtest/**', 'app/build.gradle.kts', '.github/workflows/backend.yml']
+  pull_request:
+    paths: ['web/**', 'backend/**', 'shared/**', 'loadtest/**', 'app/build.gradle.kts', '.github/workflows/backend.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Website unit tests, API route tests, real-Postgres RLS tests
+        run: npm test
+      - name: Production build
+        run: npm run build
+
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Signed-out reflection service tests
+        run: node --test backend/test/server.test.js
+      - name: Local sync load test (50 users x 200 records)
+        run: node loadtest/run-sync-load.mjs
+      - name: Secret leak check
+        run: |
+          # The Supabase anon key is public by design (role "anon"; it ships in every client) and is
+          # allow-listed by its payload. Any other JWT, service key or private key fails the check.
+          PUBLIC_ANON_PAYLOAD='eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4Z3pzZ3V4cnFmd214YWpxdmNpIiwicm9sZSI6ImFub24i'
+          if grep -rnE '(AIza[0-9A-Za-z_-]{35}|rzp_live_[A-Za-z0-9]{10,}|sb_secret_[A-Za-z0-9_-]{10,}|BEGIN RSA PRIVATE KEY|BEGIN PRIVATE KEY|eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[A-Za-z0-9_-]{30,})' \
+              web backend app shared loadtest docs --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=build \
+              | grep -v "$PUBLIC_ANON_PAYLOAD"; then
+            echo "Potential secret detected!"
+            exit 1
+          fi
+          echo "Secret scan clean."

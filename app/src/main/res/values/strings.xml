@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">Tempo</string>
+
+    <!-- FocusTimer Screen -->
+    <string name="focus_timer_brand_title">TEMPO</string>
+    <string name="focus_timer_tagline">Your energy. Your pace. Your focus.</string>
+    <string name="focus_timer_phase_focus">FOCUS SESSION</string>
+    <string name="focus_timer_phase_break">REST BREAK</string>
+    <string name="focus_timer_status_ready">Ready</string>
+    <string name="focus_timer_status_focusing">Focusing…</string>
+    <string name="focus_timer_status_resting">Resting…</string>
+    <string name="focus_timer_status_paused">Paused</string>
+    <string name="focus_timer_status_finished">Finished</string>
+    <string name="focus_timer_status_stopped">Stopped early</string>
+    <string name="focus_timer_action_start">Start</string>
+    <string name="focus_timer_action_pause">Pause</string>
+    <string name="focus_timer_action_resume">Resume</string>
+    <string name="focus_timer_action_stop">Stop</string>
+    <string name="focus_timer_action_reset">Reset</string>
+    <string name="focus_timer_action_take_break">Take Break</string>
+    <string name="focus_timer_cd_start">Start focus session</string>
+    <string name="focus_timer_cd_pause">Pause focus session</string>
+    <string name="focus_timer_cd_resume">Resume focus session</string>
+    <string name="focus_timer_cd_stop">Stop focus session early</string>
+    <string name="focus_timer_cd_reset">Reset focus session timer</string>
+    <string name="focus_timer_cd_break">Start rest break</string>
+    <string name="focus_timer_tracking_sessions">Sessions</string>
+    <string name="focus_timer_tracking_today">Today</string>
+    <string name="focus_timer_tracking_streak">Streak</string>
+    <string name="focus_timer_reset_dialog_title">Reset Active Session?</string>
+    <string name="focus_timer_reset_dialog_body">This will discard current session progress without saving it to history.</string>
+    <string name="focus_timer_dialog_cancel">Cancel</string>
+
+    <!-- ExamSelectionComponent -->
+    <string name="exam_selection_title">Select Examination</string>
+    <string name="exam_selection_subtitle">Switch categories with isolated subjects, topics, revisions, and mocks.</string>
+    <string name="exam_selection_search_placeholder">Search exams or subjects (e.g. NEET, CLAT, CA)…</string>
+    <string name="exam_selection_scoped_metadata_header">Scoped Subjects &amp; Topics</string>
+    <string name="exam_selection_isolation_note">Subjects, syllabus topics, revisions, and mocks are strictly scoped to %1$s. Previous examination progress is safely preserved.</string>
+    <string name="exam_selection_active_badge">Active</string>
+    <string name="exam_selection_confirm_title">Switch to %1$s?</string>
+    <string name="exam_selection_confirm_body">Active syllabus (%2$d subjects, %3$d topics), marking rules (%4$s), and analytics will scope exclusively to %1$s (%5$s). Your previous examination records are preserved and will not be deleted.</string>
+    <string name="exam_selection_confirm_action">Switch Exam</string>
+    <string name="exam_selection_close_action">Close</string>
+    <string name="exam_selection_empty_search">No examinations match \"%1$s\". Try searching by exam name or subject.</string>
+    <string name="exam_selection_cd_clear_search">Clear exam search</string>
+    <string name="exam_selection_cd_search">Search examinations</string>
+</resources>

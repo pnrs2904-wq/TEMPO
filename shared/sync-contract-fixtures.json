@@ -1,0 +1,124 @@
+{
+  "schemaVersion": "4.0",
+  "description": "Shared sync contract fixtures verified by Backend, Web, and Android test suites.",
+  "cases": [
+    {
+      "name": "initial_push_and_pull_dual_cursors",
+      "request": {
+        "cursor": 0,
+        "prepCursor": 0,
+        "clientPlatform": "android",
+        "appVersion": "4.0.0",
+        "deviceId": "dev-android-001",
+        "sessions": [
+          {
+            "id": "11111111-1111-4111-8111-111111111101",
+            "startedAt": "2026-11-24T10:00:00.000Z",
+            "phase": "focus",
+            "energy": 4,
+            "subject": "Physics",
+            "sessionType": "Study",
+            "plannedMinutes": 40,
+            "actualSeconds": 2400,
+            "status": "completed",
+            "focusQuality": 5,
+            "difficulty": 3,
+            "durationFeedback": "about_right",
+            "distractions": 0,
+            "updatedAt": "2026-11-24T10:40:00.000Z",
+            "deletedAt": null
+          }
+        ],
+        "preferences": {
+          "themeMode": "paper",
+          "roundsBeforeLongBreak": 4,
+          "longBreakMinutes": 15,
+          "updatedAt": "2026-11-24T10:40:00.000Z"
+        },
+        "prep": [
+          {
+            "table": "user_exam_plans",
+            "row": {
+              "id": "22222222-2222-4222-8222-222222222201",
+              "examId": "neet_ug",
+              "applicableYear": 2026,
+              "syllabusVersion": "NMC-NEET-UG-2026.1",
+              "selectedCaGroup": "both",
+              "examDateEpochDay": 20575,
+              "dailyHours": 5.0,
+              "studyDaysPerWeek": 6,
+              "targetScorePercent": 85,
+              "updatedAt": "2026-11-24T10:40:00.000Z",
+              "deletedAt": null
+            }
+          },
+          {
+            "table": "user_topic_progress",
+            "row": {
+              "id": "33333333-3333-4333-8333-333333333301",
+              "examId": "neet_ug",
+              "syllabusVersion": "NMC-NEET-UG-2026.1",
+              "subject": "Physics",
+              "unit": "Mechanics",
+              "chapter": "Kinematics",
+              "topicName": "Projectile Motion",
+              "status": "completed",
+              "difficulty": "high",
+              "revisionCount": 1,
+              "lastStudiedEpochDay": 20416,
+              "nextRevisionEpochDay": 20419,
+              "isCustom": false,
+              "updatedAt": "2026-11-24T10:40:00.000Z",
+              "deletedAt": null
+            }
+          }
+        ]
+      },
+      "expected": {
+        "acceptedSessionIds": ["11111111-1111-4111-8111-111111111101"],
+        "acceptedPrepIds": [
+          "22222222-2222-4222-8222-222222222201",
+          "33333333-3333-4333-8333-333333333301"
+        ],
+        "rejectedSessionsCount": 0,
+        "rejectedPrepCount": 0,
+        "more": false
+      }
+    },
+    {
+      "name": "reject_future_timestamp_over_5_minutes",
+      "futureOffsetMinutes": 10,
+      "expectedRejectionCode": "FUTURE_TIMESTAMP"
+    },
+    {
+      "name": "tombstone_wins_tie_on_equal_updated_at",
+      "local": {
+        "updatedAt": 1764000000000,
+        "deletedAt": null
+      },
+      "remote": {
+        "updatedAt": 1764000000000,
+        "deletedAt": 1764000000000
+      },
+      "expectedWinner": "REMOTE"
+    },
+    {
+      "name": "newer_timestamp_wins_conflict",
+      "local": {
+        "updatedAt": 1764000001000,
+        "deletedAt": null
+      },
+      "remote": {
+        "updatedAt": 1764000005000,
+        "deletedAt": null
+      },
+      "expectedWinner": "REMOTE"
+    },
+    {
+      "name": "outbox_retained_when_local_edited_after_ack",
+      "outboxUpdatedAt": 1764000010000,
+      "acceptedUpdatedAt": 1764000005000,
+      "expectedShouldClear": false
+    }
+  ]
+}

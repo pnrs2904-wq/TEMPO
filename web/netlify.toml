@@ -1,0 +1,9 @@
+# Netlify build for the Tempo website + API (Next.js; Netlify's Next.js runtime is detected automatically).
+# Secrets are set in Netlify's environment variable settings, never here.
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_TELEMETRY_DISABLED = "1"

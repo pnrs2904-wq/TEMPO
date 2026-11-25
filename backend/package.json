@@ -1,0 +1,14 @@
+{
+  "name": "tempo-reflection-backend",
+  "version": "4.0.0",
+  "description": "Zero-dependency Cloud Run proxy for signed-out Android focus reflections with Play Integrity, Upstash Redis, and Gemini x-goog-api-key auth",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/server.test.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "private": true
+}

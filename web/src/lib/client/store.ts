@@ -37,7 +37,9 @@ export interface Me {
   profile: { display_name: string | null; timezone: string; ai_enabled: boolean; ai_include_notes: boolean };
   entitlement: Entitlement;
   /** Where Pro was bought: cancellation for Google Play purchases happens in the Play Store. */
-  billingSource: "razorpay" | "play" | "grant" | "none";
+  billingSource: "razorpay" | "play" | "grant" | "free_access" | "none";
+  /** ISO end of the launch offer while it is open (Pro free for everyone), else null. */
+  freeAccessUntil: string | null;
   aiAvailable: boolean;
   billingAvailable: boolean;
   /** Shows the admin link only; every admin action is checked again in Postgres (role + MFA). */
@@ -51,6 +53,7 @@ interface ServerMe {
   profile: { role: string; displayName: string | null; aiOptIn: boolean; aiNotesOptIn: boolean };
   entitlement: { isPro: boolean; plan: string; status: string; source: string; currentPeriodEnd: string | null };
   isAdmin: boolean;
+  freeAccessUntil?: string | null;
   prices: Record<string, { amountPaise: number }>;
   paymentMethods: string[] | Record<string, unknown>;
 }
@@ -63,7 +66,8 @@ function toMe(m: ServerMe, flags: Record<string, boolean>): Me {
     user: { id: m.user.id, email: m.user.email ?? undefined },
     profile: { display_name: m.profile.displayName, timezone: deviceTimeZone(), ai_enabled: m.profile.aiOptIn, ai_include_notes: m.profile.aiNotesOptIn },
     entitlement: { tier, plan: tier === "free" ? null : plan, expiresAt: tier === "free" ? null : m.entitlement.currentPeriodEnd, features: FEATURES[tier] },
-    billingSource: (["razorpay", "play", "grant"] as const).find((x) => x === m.entitlement.source) ?? "none",
+    billingSource: (["razorpay", "play", "grant", "free_access"] as const).find((x) => x === m.entitlement.source) ?? "none",
+    freeAccessUntil: m.freeAccessUntil ?? null,
     aiAvailable: Boolean(flags.ai_reflections),
     billingAvailable: methods.some((x) => String(x).toLowerCase().includes("razorpay")),
     isAdmin: m.isAdmin,

@@ -16,7 +16,9 @@ import java.util.concurrent.TimeUnit
 enum class BillingSource(val value: String, val label: String) {
     NONE("none", "Free Plan"),
     GOOGLE_PLAY("google_play", "Google Play"),
-    RAZORPAY("razorpay", "Web (Razorpay)");
+    RAZORPAY("razorpay", "Web (Razorpay)"),
+    /** Launch offer: Pro free for every signed-in account until the server's freeAccessUntil. */
+    FREE_ACCESS("free_access", "Launch offer");
 
     companion object {
         fun fromValue(raw: String?): BillingSource =
@@ -258,7 +260,9 @@ class PlayBillingManager(
                 EntitlementStatus.GRACE_PERIOD -> "Payment grace period active. Update payment method in ${ent.source.label} to avoid interruption."
                 EntitlementStatus.ACCOUNT_HOLD -> "Subscription on account hold. Please update payment details in ${ent.source.label}."
                 EntitlementStatus.PENDING -> "Payment pending confirmation (e.g. UPI mandate). Pro unlocks automatically once settled."
-                EntitlementStatus.ACTIVE -> "Tempo Pro active via ${ent.source.label}."
+                EntitlementStatus.ACTIVE ->
+                    if (ent.source == BillingSource.FREE_ACCESS) "Tempo Pro is free for everyone during the launch offer. No payment needed."
+                    else "Tempo Pro active via ${ent.source.label}."
                 else -> null
             }
             _state.value = _state.value.copy(

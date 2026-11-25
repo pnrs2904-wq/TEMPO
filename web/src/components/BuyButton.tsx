@@ -6,6 +6,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { PLANS, type PlanId } from "@/domain/plans";
+import { freeAccessLastDay, useFreeAccess } from "@/lib/client/freeAccess";
 import { refreshMe, syncNow } from "@/lib/client/store";
 import { accessToken, api, supabase, type ApiError } from "@/lib/client/supabase";
 import { Button } from "./ui";
@@ -36,6 +37,7 @@ export function BuyButton({ plan, label, variant = "primary", onDone }: {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const freeUntil = useFreeAccess();
 
   async function buy() {
     setError(null);
@@ -71,6 +73,15 @@ export function BuyButton({ plan, label, variant = "primary", onDone }: {
       setError((e as ApiError).error ?? "Could not start the payment. Nothing has been charged.");
       setBusy(false);
     }
+  }
+
+  if (freeUntil) {
+    return (
+      <div>
+        <Button variant={variant} className="w-full" onClick={() => router.push("/app")}>Free until {freeAccessLastDay(freeUntil)}</Button>
+        <p className="mt-2 text-xs text-muted">Sign in and every Pro feature is on. No payment needed.</p>
+      </div>
+    );
   }
 
   return (

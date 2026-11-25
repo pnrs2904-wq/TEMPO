@@ -190,3 +190,18 @@ Exports full user data JSON (profile, preferences, sessions, exam prep records, 
 
 ### `GET /api/admin/metrics?days=30`, `POST /api/admin/flags`, `GET /api/admin/audit`
 Require `profile.role === 'admin'` (`403 ADMIN_REQUIRED`) **and** `aal === 'aal2'` MFA (`403 MFA_REQUIRED`), verified both in the API handler and inside PostgreSQL `SECURITY DEFINER` RPCs (`is_admin() AND has_aal2_mfa()`). Every flag mutation writes a row to `admin_audit_logs`.
+
+## Launch offer (free Pro until a set date)
+
+- `public.app_settings` row `free_access_until` (ISO timestamp) sets when the offer ends. It is seeded to
+  `2027-01-01T00:00:00+05:30`, which means free through 31 December 2026 (IST).
+- While it is in the future, `has_pro()` is true for every signed-in user, so cloud sync works for everyone.
+  `GET /api/me` reports `entitlement.source = "free_access"`, `plan = "free_access"`, `isPro = true`,
+  `includesAi = false` and `expiresAt` = the end date, plus a top-level `freeAccessUntil`. A paid plan
+  is always reported in preference to the offer.
+- `GET /api/flags` returns `freeAccessUntil` (or `null`) for signed-out pages such as pricing.
+- `POST /api/billing/checkout` answers `409 FREE_ACCESS_ACTIVE` while the offer is open, so nothing is sold.
+- After the date nothing needs deploying: everything falls back to paid entitlements. Data stays; cloud
+  writes pause for accounts without a plan.
+- Change the date (SQL editor): `update public.app_settings set value = '2027-01-31T23:59:59+05:30' where key = 'free_access_until';`
+  End it now: `... set value = now()::text ...`.

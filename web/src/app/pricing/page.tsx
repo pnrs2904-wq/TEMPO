@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BuyButton } from "@/components/BuyButton";
+import { FreeAccessBanner } from "@/components/FreeAccessBanner";
 import { MarketingShell } from "@/components/Marketing";
 import { FEATURES, PLANS, formatRupees } from "@/domain/plans";
 
@@ -20,6 +21,8 @@ export default function Pricing() {
         <h1 className="font-display text-[clamp(2.4rem,6vw,3.5rem)] leading-tight">Free to study. Pro when you want more.</h1>
         <p className="mx-auto mt-3 max-w-xl text-lg text-ink-2">The timer and its adaptive engine are free and stay free. Pay by UPI, card or netbanking.</p>
       </section>
+
+      <FreeAccessBanner className="mb-6" />
 
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" aria-label="Plans">
         <div className="flex flex-col rounded-2xl border border-line bg-surface p-5">

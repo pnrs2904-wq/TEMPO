@@ -110,6 +110,8 @@ let aMock;
 
 test.before(async () => {
   db = await createDb();
+  // The rest of this file tests normal (paid) mode; the launch-offer test opens the window itself.
+  await q(`UPDATE public.app_settings SET value = '2000-01-01T00:00:00Z' WHERE key = 'free_access_until'`);
   for (const [id, email, name] of [[A, 'a@example.com', 'Asha'], [B, 'b@example.com', 'Ravi'], [ADMIN, 'admin@example.com', 'Admin'], [FREE, 'free@example.com', null]]) {
     await q(`INSERT INTO auth.users (id, email, raw_user_meta_data) VALUES ($1, $2, $3)`, [id, email, JSON.stringify(name ? { full_name: name } : {})]);
   }
@@ -212,6 +214,37 @@ test('ownership of a row cannot be transferred', async () => {
 test('cloud writes need Pro; without it reads still work', async () => {
   await assert.rejects(syncWrite(FREE, 'sessions', session()), /row-level security/);
   assert.deepEqual(await as('authenticated', FREE, () => q(`SELECT id FROM public.sessions`)), []);
+});
+
+test('launch offer: while open every user can sync; users cannot change it; it ends by itself', async () => {
+  const [{ seeded }] = await q(`SELECT value AS seeded FROM public.app_settings WHERE key = 'free_access_until'`);
+  assert.equal(seeded, '2000-01-01T00:00:00Z');
+  try {
+    await q(`UPDATE public.app_settings SET value = (now() + interval '7 days')::text WHERE key = 'free_access_until'`);
+    const [{ pro }] = await as('authenticated', FREE, () => q(`SELECT public.has_pro() AS pro`));
+    assert.equal(pro, true);
+    const s = session();
+    await syncWrite(FREE, 'sessions', s);
+    assert.equal((await as('authenticated', FREE, () => q(`SELECT id FROM public.sessions WHERE id = $1`, [s.id]))).length, 1);
+    // Still only about yourself.
+    const [{ other }] = await as('authenticated', FREE, () => q(`SELECT public.has_pro($1) AS other`, [A]));
+    assert.equal(other, false);
+    // Everyone can read the end date; nobody but the operator can move it.
+    assert.equal((await as('anon', null, () => q(`SELECT value FROM public.app_settings`))).length, 1);
+    await assert.rejects(as('authenticated', FREE, () => q(`UPDATE public.app_settings SET value = '2099-01-01' WHERE key = 'free_access_until' RETURNING key`)), /permission denied/);
+    await assert.rejects(as('authenticated', FREE, () => q(`INSERT INTO public.app_settings (key, value) VALUES ('x_y', '1')`)), /permission denied/);
+    // Ended: back to paid-only.
+    await q(`UPDATE public.app_settings SET value = (now() - interval '1 second')::text WHERE key = 'free_access_until'`);
+    const [{ after }] = await as('authenticated', FREE, () => q(`SELECT public.has_pro() AS after`));
+    assert.equal(after, false);
+    await assert.rejects(syncWrite(FREE, 'sessions', session()), /row-level security/);
+    // A garbage value never grants access.
+    await q(`UPDATE public.app_settings SET value = 'soon' WHERE key = 'free_access_until'`);
+    const [{ junk }] = await as('authenticated', FREE, () => q(`SELECT public.has_pro() AS junk`));
+    assert.equal(junk, false);
+  } finally {
+    await q(`UPDATE public.app_settings SET value = '2000-01-01T00:00:00Z' WHERE key = 'free_access_until'`);
+  }
 });
 
 test('has_pro() answers only about yourself', async () => {

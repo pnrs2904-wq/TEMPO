@@ -5,6 +5,7 @@ import { Button, Card, Eyebrow, Segmented, Toggle, cx, inputClass } from "@/comp
 import { generateCsv, generateJson } from "@/domain/export";
 import { PLANS } from "@/domain/plans";
 import { download } from "@/lib/client/download";
+import { freeAccessLastDay } from "@/lib/client/freeAccess";
 import { exportPrep, getPrep } from "@/lib/client/prep";
 import type { ThemeId } from "@/domain/exam";
 import { eraseThisDevice, signOut, syncNow, updateProfile, updateUserState, useTempo } from "@/lib/client/store";
@@ -100,9 +101,9 @@ export default function SettingsPage() {
         <Eyebrow>Plan</Eyebrow>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="font-display text-2xl">{ent?.plan ? PLANS[ent.plan].name : "Free"}</p>
+            <p className="font-display text-2xl">{me?.billingSource === "free_access" ? "Pro · launch offer" : ent?.plan ? PLANS[ent.plan].name : "Free"}</p>
             <p className="text-xs text-muted">
-              {ent?.tier === "lifetime" ? "Never expires." : ent?.expiresAt ? `Active until ${new Date(ent.expiresAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}.` : "Timer, adaptive recommendations, exam mode and exports are free."}
+              {me?.billingSource === "free_access" && me.freeAccessUntil ? `Every Pro feature is free for everyone until ${freeAccessLastDay(me.freeAccessUntil)}.` : ent?.tier === "lifetime" ? "Never expires." : ent?.expiresAt ? `Active until ${new Date(ent.expiresAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}.` : "Timer, adaptive recommendations, exam mode and exports are free."}
             </p>
           </div>
           <div className="flex gap-2">
@@ -111,7 +112,7 @@ export default function SettingsPage() {
           </div>
         </div>
         <p className="mt-3 border-t border-line pt-3 text-xs text-muted">
-          {me?.billingSource === "play" ? "Bought on Android through Google Play. Renewal and cancellation are managed in the Play Store." : "Web passes are one-time payments: nothing renews automatically. Pro bought on Android or the web works on both."}
+          {me?.billingSource === "free_access" ? "Nothing to pay and nothing to cancel. When the offer ends your data stays put; cloud sync pauses unless you choose a plan." : me?.billingSource === "play" ? "Bought on Android through Google Play. Renewal and cancellation are managed in the Play Store." : "Web passes are one-time payments: nothing renews automatically. Pro bought on Android or the web works on both."}
         </p>
       </Card>
 

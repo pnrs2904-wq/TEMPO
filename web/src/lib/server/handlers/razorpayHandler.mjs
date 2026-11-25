@@ -1,6 +1,7 @@
 import { buildSecurityHeaders, SERVER_PRICES } from '../config.mjs';
 import { verifyHmacSha256ConstantTime } from '../crypto.mjs';
 import { createRequestId, logStructured } from '../logger.mjs';
+import { readFreeAccessUntil } from './meAndFlagsHandler.mjs';
 import { checkRateLimit } from '../redis.mjs';
 import { assertStrictKeys } from '../validators.mjs';
 
@@ -46,6 +47,12 @@ export async function handleRazorpayCheckout({
   const keyErr = assertStrictKeys(body, new Set(['plan']), 'razorpay checkout');
   if (keyErr || !SERVER_PRICES[body?.plan]) {
     return { status: 400, headers, body: { error: keyErr || 'Unknown plan', code: 'INVALID_PLAN' } };
+  }
+
+  // During the launch offer Pro is free for everyone, so nothing is sold.
+  const freeAccessUntil = await readFreeAccessUntil(db);
+  if (freeAccessUntil) {
+    return { status: 409, headers, body: { error: 'Pro is free for everyone right now. Payments open after the launch offer ends.', code: 'FREE_ACCESS_ACTIVE', freeAccessUntil } };
   }
 
   const planDef = SERVER_PRICES[body.plan];

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { signGoogleServiceAccountJwt } from '@/lib/server/crypto.mjs';
 import { createRedisStore } from '@/lib/server/redis.mjs';
 import { dbToWire, wireToDb } from '@/lib/server/wire.mjs';
+import { activeFreeAccessUntil } from '@/lib/server/config.mjs';
 
 export interface CallerAuth {
   userId: string;
@@ -154,7 +155,16 @@ export function createSupabaseDbAdapter(auth: CallerAuth | null) {
 
     async hasPro(userId: string) {
       const ent = await this.getActiveEntitlement(userId);
-      return ent.isPro;
+      if (ent.isPro) return true;
+      // Launch offer: Pro for every signed-in user while public.app_settings.free_access_until is in the future.
+      return Boolean(activeFreeAccessUntil(await this.getFreeAccessUntil()));
+    },
+
+    /** Raw ISO end of the launch offer (public setting), or null. */
+    async getFreeAccessUntil(): Promise<string | null> {
+      const client = userClient || createJwtClient('');
+      const { data } = await client.from('app_settings').select('value').eq('key', 'free_access_until').maybeSingle();
+      return (data?.value as string) || null;
     },
 
     async getFeatureFlags() {

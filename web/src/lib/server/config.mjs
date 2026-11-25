@@ -90,6 +90,29 @@ export function buildSecurityHeaders({
   return headers;
 }
 
+/**
+ * Launch offer: Pro free for every signed-in user until this moment (ISO string from
+ * public.app_settings.free_access_until). Returns the ISO end when the window is open, else null.
+ */
+export function activeFreeAccessUntil(untilIso, nowMs = Date.now()) {
+  if (!untilIso) return null;
+  const end = Date.parse(untilIso);
+  return Number.isFinite(end) && end > nowMs ? new Date(end).toISOString() : null;
+}
+
+/** The entitlement reported while the launch offer is open and the user has no paid plan. */
+export function freeAccessEntitlement(untilIso) {
+  return {
+    isPro: true,
+    plan: 'free_access',
+    status: 'active',
+    source: 'free_access',
+    sourceRef: null,
+    includesAi: false,
+    currentPeriodEnd: untilIso
+  };
+}
+
 export function getPaymentMethodsForPlatform(platform) {
   const norm = String(platform || 'web').toLowerCase();
   if (norm === 'android') {

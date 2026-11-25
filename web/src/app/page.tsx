@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FreeAccessBanner } from "@/components/FreeAccessBanner";
 import { HeroRing, MarketingShell } from "@/components/Marketing";
 
 const faqs = [
@@ -31,6 +32,7 @@ const jsonLd = {
 export default function Landing() {
   return (
     <MarketingShell>
+      <FreeAccessBanner className="mt-4" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
 
       <section className="grid items-center gap-10 pb-10 pt-6 md:grid-cols-2 md:pt-14">

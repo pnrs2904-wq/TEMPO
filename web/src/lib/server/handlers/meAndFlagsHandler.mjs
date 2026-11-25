@@ -1,10 +1,21 @@
 import {
+  activeFreeAccessUntil,
   buildSecurityHeaders,
+  freeAccessEntitlement,
   getPaymentMethodsForPlatform,
   SAFE_DEFAULT_FLAGS,
   SERVER_PRICES
 } from '../config.mjs';
 import { createRequestId, logStructured } from '../logger.mjs';
+
+/** ISO end of the launch offer while it is open, else null. Never throws. */
+export async function readFreeAccessUntil(db, nowMs = Date.now()) {
+  try {
+    return activeFreeAccessUntil(await db.getFreeAccessUntil?.(), nowMs);
+  } catch {
+    return null;
+  }
+}
 
 export async function handleMe({
   auth,
@@ -23,7 +34,10 @@ export async function handleMe({
   }
 
   const profile = await db.getProfile(auth.userId);
-  const entitlement = await db.getActiveEntitlement(auth.userId);
+  const paid = await db.getActiveEntitlement(auth.userId);
+  const freeAccessUntil = await readFreeAccessUntil(db);
+  // A paid plan always wins; otherwise the launch offer (if open) grants Pro.
+  const entitlement = paid?.isPro || !freeAccessUntil ? paid : freeAccessEntitlement(freeAccessUntil);
   const isAdmin = profile?.role === 'admin';
   const paymentMethods = getPaymentMethodsForPlatform(platform);
 
@@ -56,6 +70,7 @@ export async function handleMe({
         expiresAt: entitlement?.currentPeriodEnd || null
       },
       isAdmin,
+      freeAccessUntil,
       prices: SERVER_PRICES,
       paymentMethods
     }
@@ -83,8 +98,10 @@ export async function handleFlags({ origin = null, db, logSink = null }) {
     // Fallback to safe defaults without exposing errors
   }
 
+  const freeAccessUntil = await readFreeAccessUntil(db);
+
   logStructured({ level: 'info', requestId, route: '/api/flags', method: 'GET', status: 200, latencyMs: Date.now() - start, sink: logSink });
-  return { status: 200, headers, body: { flags } };
+  return { status: 200, headers, body: { flags, freeAccessUntil } };
 }
 
 export async function handleHealth({ origin = null, db, logSink = null }) {

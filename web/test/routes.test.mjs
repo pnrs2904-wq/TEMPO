@@ -1057,3 +1057,57 @@ test('GET /api/me, /api/flags, and /api/health return platform payment methods, 
   assert.equal(healthDown.status, 503);
   assert.equal(healthDown.body.database, 'unreachable');
 });
+
+test('Launch offer: /api/me reports free Pro while open, paid plans win, checkout is closed, and it ends on its own', async () => {
+  const db = createMockDb();
+  const NEW_USER = '0b0b0b0b-0000-4000-8000-00000000f4ee'; // no purchase on record
+  const until = new Date(Date.now() + 7 * 86400_000).toISOString();
+  db.getFreeAccessUntil = async () => until;
+
+  // A user with no purchase gets Pro from the offer, without AI.
+  const me = await handleMe({ auth: { userId: NEW_USER, email: 'new@example.com' }, platform: 'android', db });
+  assert.equal(me.status, 200);
+  assert.equal(me.body.entitlement.isPro, true);
+  assert.equal(me.body.entitlement.source, 'free_access');
+  assert.equal(me.body.entitlement.status, 'active');
+  assert.equal(me.body.entitlement.includesAi, false);
+  assert.equal(me.body.entitlement.expiresAt, until);
+  assert.equal(me.body.freeAccessUntil, until);
+
+  // A paid plan is reported as itself, not as the offer.
+  db._state.entitlements.set(USER_B, { isPro: true, plan: 'lifetime', status: 'active', source: 'razorpay', includesAi: true, currentPeriodEnd: null });
+  const paid = await handleMe({ auth: { userId: USER_B }, platform: 'web', db });
+  assert.equal(paid.body.entitlement.plan, 'lifetime');
+  assert.equal(paid.body.entitlement.source, 'razorpay');
+
+  // Flags expose the end date to signed-out visitors (pricing page).
+  const flags = await handleFlags({ db });
+  assert.equal(flags.body.freeAccessUntil, until);
+
+  // Nothing is sold during the offer, and no order is created.
+  const calls = [];
+  const chk = await handleRazorpayCheckout({
+    auth: { userId: NEW_USER }, body: { plan: 'pro_monthly' }, db, redis: new InMemoryRedisStore(),
+    razorpayClient: { async createOrder(a) { calls.push(a); return { id: 'order_x' }; } }, razorpayKeyId: 'rzp_test_key'
+  });
+  assert.equal(chk.status, 409);
+  assert.equal(chk.body.code, 'FREE_ACCESS_ACTIVE');
+  assert.equal(calls.length, 0);
+
+  // Once the moment has passed, everything falls back to normal with no deploy.
+  db.getFreeAccessUntil = async () => new Date(Date.now() - 1000).toISOString();
+  const after = await handleMe({ auth: { userId: NEW_USER }, platform: 'web', db });
+  assert.equal(after.body.entitlement.isPro, false);
+  assert.equal(after.body.freeAccessUntil, null);
+  const chkAfter = await handleRazorpayCheckout({
+    auth: { userId: NEW_USER }, body: { plan: 'pro_monthly' }, db, redis: new InMemoryRedisStore(),
+    razorpayClient: { async createOrder() { return { id: 'order_y' }; } }, razorpayKeyId: 'rzp_test_key'
+  });
+  assert.equal(chkAfter.status, 200);
+
+  // A broken or missing setting never grants Pro and never breaks /api/me.
+  db.getFreeAccessUntil = async () => { throw new Error('db down'); };
+  const broken = await handleMe({ auth: { userId: NEW_USER }, platform: 'web', db });
+  assert.equal(broken.status, 200);
+  assert.equal(broken.body.entitlement.isPro, false);
+});

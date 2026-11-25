@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // The Worker's name sets its address: https://tempo.<your-account>.workers.dev
+  "name": "tempo",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    // Self-reference used by OpenNext; must match "name" above.
+    { "binding": "WORKER_SELF_REFERENCE", "service": "tempo" }
+  ],
+  "observability": { "enabled": true }
+  // Secrets (SUPABASE_SERVICE_ROLE_KEY, RAZORPAY_*, GEMINI_API_KEY, …) are added in the
+  // Cloudflare dashboard (Worker → Settings → Variables and Secrets), never here.
+}

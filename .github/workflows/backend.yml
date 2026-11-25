@@ -30,6 +30,8 @@ jobs:
         run: npm test
       - name: Production build
         run: npm run build
+      - name: Cloudflare Workers bundle (what Cloudflare deploys)
+        run: npx opennextjs-cloudflare build
 
   backend:
     runs-on: ubuntu-latest

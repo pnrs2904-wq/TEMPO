@@ -12,7 +12,10 @@
     "build:html": "next build && node scripts/build-html.mjs",
     "test:server": "node --test test/migrations-static.test.mjs test/routes.test.mjs",
     "test:db": "node --test test/db-rls.test.mjs",
-    "test:load": "node ../loadtest/run-sync-load.mjs"
+    "test:load": "node ../loadtest/run-sync-load.mjs",
+    "cf:build": "opennextjs-cloudflare build",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",
@@ -26,6 +29,7 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.2.17",
+    "@opennextjs/cloudflare": "^1.20.18",
     "@tailwindcss/postcss": "^4.3.5",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
@@ -34,7 +38,8 @@
     "fake-indexeddb": "^6.2.8",
     "tailwindcss": "^4.3.5",
     "typescript": "^5.9.3",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.0",
+    "wrangler": "^4.168.0"
   },
   "engines": {
     "node": ">=20.0.0"

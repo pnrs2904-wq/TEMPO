@@ -6,3 +6,6 @@ node_modules
 next-env.d.ts
 dist
 .netlify
+.open-next
+.wrangler
+.dev.vars

@@ -27,3 +27,7 @@ dist/
 !.env.example
 *.p12
 service-account*.json
+!.env.production
+.open-next/
+.wrangler/
+.dev.vars

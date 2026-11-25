@@ -9,7 +9,7 @@
 | `shared/` | Sync contract fixtures used by the server, website and Android tests |
 | `docs/` | `DEPLOYMENT.md` (live setup and remaining steps), `TEST_REPORT.md`, `API.md`, `SECURITY_REVIEW.md`, `DATA_INVENTORY.md` |
 
-Live: database on Supabase project `tempo` (Mumbai); website at https://tempo-focus-study.netlify.app once the repository is linked (see `docs/DEPLOYMENT.md` §2).
+Live: database on Supabase project `tempo` (Mumbai); website and API live at https://tempo.harinag9590.workers.dev (Cloudflare Workers, deploys on every push; see `docs/DEPLOYMENT.md`).
 
 ```
 cd web && npm ci && npm run typecheck && npm test && npm run build   # website + API: 126 unit, 17 route, 16 Postgres tests

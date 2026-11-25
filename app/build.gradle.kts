@@ -26,7 +26,7 @@ android {
     // The Supabase anon key is public by design (it ships in every client); data is protected by
     // row-level security and the server, never by hiding this key.
     val backendUrl = System.getenv("TEMPO_BACKEND_URL")?.takeIf { it.isNotBlank() } ?: ""
-    val apiBaseUrl = System.getenv("TEMPO_API_BASE_URL")?.takeIf { it.isNotBlank() } ?: "https://tempo-focus-study.netlify.app"
+    val apiBaseUrl = System.getenv("TEMPO_API_BASE_URL")?.takeIf { it.isNotBlank() } ?: "https://tempo.harinag9590.workers.dev"
     val supabaseUrl = System.getenv("SUPABASE_URL")?.takeIf { it.isNotBlank() } ?: "https://hxgzsguxrqfwmxajqvci.supabase.co"
     val supabaseAnonKey = System.getenv("SUPABASE_ANON_KEY")?.takeIf { it.isNotBlank() }
       ?: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4Z3pzZ3V4cnFmd214YWpxdmNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU1ODI1NDMsImV4cCI6MjExMTE1ODU0M30.amSyPLN0yJBqY3joYvrubz8zyQ3u-8X1Ghtkn3hYJwo"

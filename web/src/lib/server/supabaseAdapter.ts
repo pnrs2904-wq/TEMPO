@@ -43,7 +43,9 @@ function createJwtClient(jwt: string): SupabaseClient {
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
   return createClient(url, anon, {
     auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { Authorization: `Bearer ${jwt}` } }
+    // Signed-out requests (health, flags) must not send an empty "Bearer " header: Supabase
+    // rejects it, which made /api/health report the database unreachable and flags fall back.
+    ...(jwt ? { global: { headers: { Authorization: `Bearer ${jwt}` } } } : {})
   });
 }
 

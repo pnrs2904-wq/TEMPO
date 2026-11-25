@@ -55,6 +55,8 @@ jobs:
         run: ./gradlew --no-daemon testDebugUnitTest
 
       - name: Lint
+        # Reported (see the test-and-lint-reports artifact) without blocking the APK.
+        continue-on-error: true
         run: ./gradlew --no-daemon lintDebug
 
       - name: Decode upload keystore

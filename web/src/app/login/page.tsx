@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Card, inputClass, Segmented } from "@/components/ui";
 import { supabase } from "@/lib/client/supabase";
 
@@ -14,8 +14,30 @@ function friendly(code: string | undefined, fallback: string) {
   return fallback;
 }
 
+/**
+ * Asks Supabase which sign-in providers are switched on (public endpoint), so the Google button
+ * only appears once Google is configured. Clicking it before then fails with
+ * "Unsupported provider: provider is not enabled".
+ */
+function useGoogleEnabled(): boolean {
+  const [enabled, setEnabled] = useState(false);
+  useEffect(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return;
+    let cancelled = false;
+    fetch(`${url}/auth/v1/settings`, { headers: { apikey: key } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((s: { external?: Record<string, boolean> } | null) => { if (!cancelled) setEnabled(Boolean(s?.external?.google)); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+  return enabled;
+}
+
 export default function LoginPage() {
   const sb = supabase();
+  const googleEnabled = useGoogleEnabled();
   const [mode, setMode] = useState<Mode>("password");
   const [creating, setCreating] = useState(false);
   const [email, setEmail] = useState("");
@@ -65,8 +87,12 @@ export default function LoginPage() {
         <Card className="mt-6 border-green bg-green-soft text-sm"><p role="status">{status.message}</p></Card>
       ) : (
         <>
-          <Button variant="outline" className="mt-6 w-full" onClick={google} disabled={busy}>Continue with Google</Button>
-          <div className="my-5 flex items-center gap-3 text-xs text-muted"><span className="h-px flex-1 bg-line" />or with email<span className="h-px flex-1 bg-line" /></div>
+          {googleEnabled ? (
+            <>
+              <Button variant="outline" className="mt-6 w-full" onClick={google} disabled={busy}>Continue with Google</Button>
+              <div className="my-5 flex items-center gap-3 text-xs text-muted"><span className="h-px flex-1 bg-line" />or with email<span className="h-px flex-1 bg-line" /></div>
+            </>
+          ) : <div className="mt-6" />}
           <Segmented label="Sign-in method" value={mode} onChange={(v) => { setMode(v); setStatus({ kind: "idle" }); }} options={[{ value: "password", label: "Password" }, { value: "link", label: "Email link" }]} />
           <form onSubmit={submit} className="mt-4 space-y-3">
             <input type="email" required autoComplete="email" className={inputClass} placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} aria-label="Email address" />

@@ -52,9 +52,9 @@ android {
       }
     }
     create("debugConfig") {
-      // Shared debug keystore if present, otherwise the machine's own (~/.android/debug.keystore).
-      val shared = file("${rootDir}/debug.keystore")
-      storeFile = if (shared.exists()) shared else file("${System.getProperty("user.home")}/.android/debug.keystore")
+      // Used only when a shared debug keystore is committed; otherwise the build type below falls
+      // back to Android's built-in debug signing, which creates ~/.android/debug.keystore itself.
+      storeFile = file("${rootDir}/debug.keystore")
       storePassword = "android"
       keyAlias = "androiddebugkey"
       keyPassword = "android"
@@ -70,7 +70,10 @@ android {
       val releaseSigning = signingConfigs.getByName("release")
       signingConfig = if (releaseSigning.storeFile != null) releaseSigning else null
     }
-    debug { signingConfig = signingConfigs.getByName("debugConfig") }
+    debug {
+      signingConfig = if (file("${rootDir}/debug.keystore").exists()) signingConfigs.getByName("debugConfig")
+        else signingConfigs.getByName("debug")
+    }
   }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
